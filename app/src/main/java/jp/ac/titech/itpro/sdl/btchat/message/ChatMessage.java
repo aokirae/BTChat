@@ -9,7 +9,9 @@ public class ChatMessage implements Parcelable {
     final static String FIELD_CONTENT = "content";
     final static String FIELD_SENDER = "sender";
 
+    // 通し番号
     public int seq;
+    // 時間
     public long time;
     public String content;
     public String sender;

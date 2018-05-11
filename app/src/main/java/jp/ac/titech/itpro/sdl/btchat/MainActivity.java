@@ -25,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.RotateAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -91,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
     private SoundPool soundPool;
     private int sound_connected;
     private int sound_disconnected;
+    private Button bellButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,6 +154,16 @@ public class MainActivity extends AppCompatActivity {
         sound_connected = soundPool.load(this, R.raw.nhk_doorbell, 1);
         // https://www.nhk.or.jp/archives/creative/material/view.html?m=D0002070102_00000
         sound_disconnected = soundPool.load(this, R.raw.nhk_woodblock2, 1);
+        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+                Log.d("debag","sampleId="+sampleId);
+                Log.d("debag", "status="+status);
+            }
+        });
+
+        bellButton = findViewById(R.id.bell);
+
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         if (btAdapter != null)
@@ -293,6 +305,26 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void onClickBellButton(View v){
+        Log.d(TAG, "onClickBellButton");
+        if (commThread != null){
+            //String content = inputText.getText().toString().trim();
+            String content = "bell";
+            if (content.length() == 0) {
+                Toast.makeText(this, R.string.toast_empty_message, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            //message_seq++;
+            long time = System.currentTimeMillis();
+            ChatMessage message = new ChatMessage(message_seq, time, content, devName);
+            commThread.send(message);
+            //chatLogAdapter.add(message);
+            //chatLogAdapter.notifyDataSetChanged();
+            //chatLogView.smoothScrollToPosition(chatLog.size());
+            //inputText.getEditableText().clear();
+        }
+    }
+
     private void setupBT() {
         Log.d(TAG, "setupBT");
         if (!btAdapter.isEnabled())
@@ -406,6 +438,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Server-Side
 
+    // 発見可能にする
     private void startServer() {
         Log.d(TAG, "startServer");
         Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
@@ -691,9 +724,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showMessage(ChatMessage message) {
-        chatLogAdapter.add(message);
-        chatLogAdapter.notifyDataSetChanged();
-        chatLogView.smoothScrollToPosition(chatLogAdapter.getCount());
+        if(message.content.equals("bell")){
+            soundPool.play(sound_connected, 1.0f, 1.0f, 0, 0,1);
+        }
+        else {
+            chatLogAdapter.add(message);
+            chatLogAdapter.notifyDataSetChanged();
+            chatLogView.smoothScrollToPosition(chatLogAdapter.getCount());
+        }
     }
 
     private void disconnect() {

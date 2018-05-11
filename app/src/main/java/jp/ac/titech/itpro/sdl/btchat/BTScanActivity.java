@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -63,6 +64,8 @@ public class BTScanActivity extends AppCompatActivity {
     }
 
     private State state = State.Initializing;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
